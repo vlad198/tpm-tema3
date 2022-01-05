@@ -1,6 +1,7 @@
 import lists.CustomList;
 import lists.OptimisticList;
 import lists.VersionedOptimisticList;
+import typesOfThreads.Access;
 import typesOfThreads.Add;
 import typesOfThreads.Remove;
 
@@ -12,26 +13,30 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Classic");
         CustomList<Integer> optimisticList = new OptimisticList<>();
-        test_list(optimisticList, 100_000, 25_000, 2, 2);
+        test_list(optimisticList, 100_000, 25_000, 25_000, 2, 2, 0);
 
         System.out.println("Versioned");
         CustomList<Integer> versionedOptimisticList = new VersionedOptimisticList<>();
-        test_list(versionedOptimisticList, 100_000, 25_000, 2, 2);
+        test_list(versionedOptimisticList, 100_000, 25_000, 25_000, 2, 2, 0);
     }
 
-    public static void test_list(CustomList<Integer> list, int howManyValuesToAdd, int howManyToRemove, int noAddTh, int noRmTh) {
+    public static void test_list(CustomList<Integer> list, int howManyValuesToAdd, int howManyToRemove, int howManyToAccess, int nAddTh, int nRmTh, int nAccTh) {
         List<Thread> threadList = new LinkedList<>();
-        IntStream.range(0, noAddTh)
+        IntStream.range(0, nAddTh)
                 .forEach(value -> threadList.add(
-                                new Thread(new Add(list, value * howManyValuesToAdd / noAddTh, howManyValuesToAdd / noAddTh))
+                                new Thread(new Add(list, value * howManyValuesToAdd / nAddTh, howManyValuesToAdd / nAddTh))
                         )
                 );
 
-        IntStream.range(0, noRmTh).forEach(value -> threadList.add(
-                new Thread(new Remove(list, value * howManyToRemove / noRmTh, howManyToRemove / noRmTh))
+        IntStream.range(0, nRmTh).forEach(value -> threadList.add(
+                new Thread(new Remove(list, value * howManyToRemove / nRmTh, howManyToRemove / nRmTh))
         ));
 
-        int waitToAddThreads = (int) Math.ceil((float) howManyToRemove / ((float) howManyValuesToAdd / (float) noAddTh));
+        IntStream.range(0, nAccTh).forEach(value -> threadList.add(
+                new Thread(new Access(list, value * howManyToAccess / nAccTh, howManyToAccess / nAccTh))
+        ));
+
+        int waitToAddThreads = (int) Math.ceil((float) howManyToRemove / ((float) howManyValuesToAdd / (float) nAddTh));
 
         IntStream.range(0, waitToAddThreads).forEach(i -> threadList.get(i).start());
         IntStream.range(0, waitToAddThreads).forEach(i -> {

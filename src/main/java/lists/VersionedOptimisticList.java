@@ -23,7 +23,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
      * First list entry
      */
     private final Node head;
-    private Integer version;
+    private int version;
 
     /**
      * Constructor
@@ -49,7 +49,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                 pred = current;
                 current = current.next;
             }
-            Integer prev_version = this.version;
+            int prev_version = this.version;
             pred.lock();
             current.lock();
             try {
@@ -86,7 +86,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                 pred = current;
                 current = current.next;
             }
-            Integer prev_version = this.version;
+            int prev_version = this.version;
             pred.lock();
             current.lock();
             try {
@@ -122,7 +122,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                 current = current.next;
             }
             try {
-                Integer prev_version = this.version;
+                int prev_version = this.version;
                 pred.lock();
                 current.lock();
                 if (validate(pred, current, prev_version)) {
@@ -142,8 +142,8 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
      * @param current current node
      * @return whther predecessor and current have changed
      */
-    private boolean validate(Node pred, Node current, Integer prev_version) {
-        if (Objects.equals(prev_version, this.version)) {
+    private boolean validate(Node pred, Node current, int prev_version) {
+        if (prev_version == this.version) {
             return true;
         }
         Node entry = head;
