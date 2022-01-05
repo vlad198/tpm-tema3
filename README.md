@@ -32,8 +32,6 @@ existente in coada
 
 ### Teste
 
-Input:
-
 Timpi de mai jos sunt duratele de executie ale fiecarui thread. Pentru a calcula durata unei operatii in medie pentru
 respectivul thread vom imparti la numarul de valori cu, care acesta lucreaza, iar in cazul nostru fiecarui tip de thread
 ii este asignat acelasi numar de valori.(n_tip_val_lucrez/n_thread_tip)
