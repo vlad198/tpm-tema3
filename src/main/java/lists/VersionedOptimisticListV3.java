@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Maurice Herlihy
  * (minor refactoring by Emanuel Onica)
  */
-public class VersionedOptimisticList<T> implements CustomList<T> {
+public class VersionedOptimisticListV3<T> implements CustomList<T> {
     /**
      * First list entry
      */
@@ -30,7 +30,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
     /**
      * Constructor
      */
-    public VersionedOptimisticList() {
+    public VersionedOptimisticListV3() {
         this.head = new Node(Integer.MIN_VALUE);
         this.head.next = new Node(Integer.MAX_VALUE);
         this.version = 0;
@@ -53,14 +53,16 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                 current = current.next;
             }
             int prev_version = this.version;
-//            int prev_atomic_version = this.atomicVersion.get();
+            int predVersion = pred.version.get();
+            int currentVersion = current.version.get();
+//          int prev_atomic_version = this.atomicVersion.get();
             pred.lock();
             current.lock();
             try {
 //                if(validate(pred, current, prev_version) != validate(pred, current, prev_atomic_version)) {
 //                    System.out.println("WE NEED ATOMIC!");
 //                }
-                if (validate(pred, current, prev_version)) {
+                if (validate(pred, current, prev_version, predVersion, currentVersion)) {
                     if (current.key == key) { // present
                         return false;
                     } else {               // not present
@@ -68,7 +70,10 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                         entry.next = current;
                         pred.next = entry;
                         this.version++;
-//                        this.atomicVersion.getAndIncrement();
+//                      this.atomicVersion.getAndIncrement();
+                        pred.version.getAndIncrement();
+                        entry.version.getAndIncrement();
+                        current.version.getAndIncrement();
                         return true;
                     }
                 }
@@ -95,18 +100,23 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                 current = current.next;
             }
             int prev_version = this.version;
-//            int prev_atomic_version = this.atomicVersion.get();
+            int predVersion = pred.version.get();
+            int currentVersion = current.version.get();
+//          int prev_atomic_version = this.atomicVersion.get();
             pred.lock();
             current.lock();
             try {
 //                if(validate(pred, current, prev_version) != validate(pred, current, prev_atomic_version)) {
 //                    System.out.println("WE NEED ATOMIC!");
 //                }
-                if (validate(pred, current, prev_version)) {
+                if (validate(pred, current, prev_version, predVersion, currentVersion)) {
                     if (current.key == key) { // present in list
                         pred.next = current.next;
                         this.version++;
-//                        this.atomicVersion.getAndIncrement();
+//                      this.atomicVersion.getAndIncrement();
+                        pred.version.getAndIncrement();
+                        current.version.getAndIncrement();
+
                         return true;
                     } else {               // not present in list
                         return false;
@@ -134,15 +144,17 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
                 pred = current;
                 current = current.next;
             }
+            int prev_version = this.version;
+            int predVersion = pred.version.get();
+            int currentVersion = current.version.get();
+//          int prev_atomic_version = this.atomicVersion.get();
             try {
-                int prev_version = this.version;
-//                int prev_atomic_version = this.atomicVersion.get();
-                pred.lock();
-                current.lock();
+                pred.lock(); // should these be in here?
+                current.lock(); // keep it this way since that's how they are in the original
 //                if(validate(pred, current, prev_version) != validate(pred, current, prev_atomic_version)) {
 //                    System.out.println("WE NEED ATOMIC!");
 //                }
-                if (validate(pred, current, prev_version)) {
+                if (validate(pred, current, prev_version, predVersion, currentVersion)) {
                     return (current.key == key);
                 }
             } finally {                // always unlock
@@ -174,8 +186,12 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
      * @param current current node
      * @return whther predecessor and current have changed
      */
-    private boolean validate(Node pred, Node current, int prev_version) {
+    private boolean validate(Node pred, Node current, int prev_version, int predVersion, int currentVersion) {
         if (prev_version == this.version) {
+            return true;
+        }
+        if (pred.next == current && pred.version.get() == predVersion && current.version.get() == currentVersion) {
+//          System.out.println("Used");
             return true;
         }
         Node entry = head;
@@ -208,6 +224,8 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
          */
         Lock lock;
 
+        AtomicInteger version;
+
         /**
          * Constructor for usual node
          *
@@ -217,6 +235,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
             this.item = item;
             this.key = item.hashCode();
             lock = new ReentrantLock();
+            version = new AtomicInteger(0);
         }
 
         /**
@@ -227,6 +246,7 @@ public class VersionedOptimisticList<T> implements CustomList<T> {
         Node(int key) {
             this.key = key;
             lock = new ReentrantLock();
+            version = new AtomicInteger(0); // does this value matter?
         }
 
         /**

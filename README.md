@@ -22,7 +22,7 @@ cazul in care al doilea enq se realizeaza mai repede se pierde propietatea de fi
 c)
 
 - da, ar merge in continuare bine coada
-- ar aparea probleme la mai multe operatii de deq
+- fuziunea abordarilor va functiona corect
 
 d) este necesar, daca nu ar fi in sectiunea protejata de lock mai multe thread-uri ar putea trece fara a vedea
 modificarile facute de celelalte thread-uri si s-ar incerca elmiminarea mai multor elemente decat numarul de elemente
@@ -38,25 +38,19 @@ ii este asignat acelasi numar de valori.(n_tip_val_lucrez/n_thread_tip)
 
 Input:
 
-- Add: primele 100_000 valori: 2 threads
-- Remove: primele 25_000 pare: 1 thread
-- Access: access primele 25_000: 1 thread
+- Add: primele 100_000 valori: 4 threads
+- Remove: primele 25_000 pare: 4 thread
+- Access: access primele 25_000: 4 thread
 
-![img.png](images/img.png)
+![img_1.png](img_1.png)
 
-![img_1.png](images/img_1.png)
+![img_2.png](img_2.png)
 
-![img_2.png](images/img_2.png)
+Alta rulare
 
-Input:
+![img_3.png](img_3.png)
 
-- Add: primele 100_000 valori: 2 threads
-- Remove: primele 25_000 pare: 2 threads
-- Access: access _ : 0 thread
-
-![img_3.png](images/img_3.png)
-
-![img_4.png](images/img_4.png)
+![img_4.png](img_4.png)
 
 Se observa o imbunatarire de aproximativ 90-100% a timpului de executie al algoritmului prin adaugarea versionarii.
 
@@ -69,3 +63,7 @@ add/remove o va schimba intrucat sunt operatii care schimba lista noastra, dar n
 Inainte de a cere lock-ul pentru a altera lista vom salva o versiune a listei iar daca in momentul in care primim voie
 sa lucram cu aceasta versiunea ramane neschimbata inseamna ca structura ei nu a fost modificata iar un nou validate ar
 deveni inutil si consumator de timp.
+
+Pentru versiunea 3 am adaugat versionare si la nivel de nod. Daca verificarea la nivel de lista esueaza, putem folosi
+versiunile nodurilor dinainte de lock pe care le vom compara cu cele de dupa lock pentru a determina daca nodurile de
+interes au fost modificate. Daca au fost modificate, facem verificarea clasica parcurgand lista.

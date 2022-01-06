@@ -6,4 +6,6 @@ public interface CustomList<T> {
     boolean remove(T item);
 
     boolean contains(T item);
+
+    void printElements();
 }

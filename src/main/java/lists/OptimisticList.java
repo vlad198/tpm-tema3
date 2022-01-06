@@ -126,6 +126,21 @@ public class OptimisticList<T> implements CustomList<T> {
         }
     }
 
+    @Override
+    public void printElements() {
+        Node node = head.next;
+        while(node.next != null) {
+            if((Integer) node.item >= 25000)
+                break;
+            if((Integer) node.item % 2 == 0) {
+                System.out.print("Yikes");
+                break;
+            }
+            node = node.next;
+        }
+        System.out.println("\n###################\n");
+    }
+
     /**
      * Check that prev and current are still in list and adjacent
      *
