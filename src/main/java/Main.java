@@ -1,6 +1,7 @@
 import lists.CustomList;
 import lists.OptimisticList;
 import lists.VersionedOptimisticList;
+import lists.VersionedOptimisticListV2;
 import typesOfThreads.Access;
 import typesOfThreads.Add;
 import typesOfThreads.Remove;
@@ -18,6 +19,10 @@ public class Main {
         System.out.println("Versioned");
         CustomList<Integer> versionedOptimisticList = new VersionedOptimisticList<>();
         test_list(versionedOptimisticList, 100_000, 25_000, 25_000, 2, 2, 0);
+
+        System.out.println("Versioned v2(with atomic integer)");
+        CustomList<Integer> versionedOptimisticListV2 = new VersionedOptimisticListV2<>();
+        test_list(versionedOptimisticListV2, 100_000, 25_000, 25_000, 2, 2, 0);
     }
 
     public static void test_list(CustomList<Integer> list, int howManyValuesToAdd, int howManyToRemove, int howManyToAccess, int nAddTh, int nRmTh, int nAccTh) {
